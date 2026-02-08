@@ -100,7 +100,8 @@
   body {
     @apply text-foreground;
     font-family: 'DM Sans', sans-serif;
-    background: linear-gradient(175deg, hsl(48 85% 90%) 0%, hsl(35 80% 82%) 25%, hsl(18 75% 72%) 55%, hsl(5 65% 58%) 85%, hsl(350 55% 48%) 100%);
+    background: linear-gradient(170deg, hsl(48 90% 88%) 0%, hsl(35 85% 78%) 20%, hsl(20 80% 65%) 45%, hsl(8 75% 55%) 70%, hsl(350 65% 45%) 90%, hsl(340 60% 38%) 100%);
+    background-attachment: fixed;
     min-height: 100vh;
   }
   h1, h2, h3 {

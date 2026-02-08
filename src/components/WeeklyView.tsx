@@ -58,43 +58,72 @@ export function WeeklyView({
   return <div className="px-6">
       {/* Week navigation */}
       <div className="flex items-center justify-between mb-4">
-        <button onClick={handlePrev} className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="Previous week">
+        <button onClick={handlePrev} className="p-2 rounded-lg hover:bg-secondary/50 transition-colors" aria-label="Previous week">
           <ChevronLeft className="w-5 h-5 text-foreground/70" />
         </button>
         <h3 className="font-medium text-foreground/80 text-2xl">
           {weekLabel}
         </h3>
-        <button onClick={handleNext} className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="Next week">
+        <button onClick={handleNext} className="p-2 rounded-lg hover:bg-secondary/50 transition-colors" aria-label="Next week">
           <ChevronRight className="w-5 h-5 text-foreground/70" />
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
-        {weekDays.map((day, i) => <motion.button key={day.dateStr} initial={{
-        opacity: 0,
-        y: 10
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        delay: i * 0.05
-      }} onClick={() => onDayClick(day.dateStr)} className={`rounded-xl p-3 min-h-[100px] text-left transition-all ${day.isToday ? 'gradient-warm shadow-soft' : 'bg-card shadow-card hover:shadow-soft'}`}>
-            <p className={`text-xs font-medium mb-1 ${day.isToday ? 'text-foreground' : 'text-muted-foreground'}`}>
-              {format(day.date, 'EEE')}
-            </p>
-            <p className={`text-lg font-serif ${day.isToday ? 'text-foreground' : 'text-foreground/70'}`}>
-              {format(day.date, 'd')}
-            </p>
-            {day.intensity !== 'none' && <div className={`w-2 h-2 rounded-full mt-1 ${day.intensity === 'heavy' ? 'fixation-heavy' : day.intensity === 'medium' ? 'fixation-medium' : 'fixation-light'}`} />}
-            {day.dayScheduled.slice(0, 2).map(s => <div key={s.id} className="mt-1">
-                <p className="text-[10px] text-foreground/60 truncate">
-                  {s.pattern?.name}
+      <div className="flex flex-col gap-2">
+        {weekDays.map((day, i) => (
+          <motion.button
+            key={day.dateStr}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.04 }}
+            onClick={() => onDayClick(day.dateStr)}
+            className={`rounded-xl p-4 text-left transition-all flex items-center gap-4 ${
+              day.isToday
+                ? 'glass-strong ring-1 ring-primary/30 shadow-soft'
+                : 'glass hover:shadow-soft'
+            }`}
+          >
+            {/* Day & date */}
+            <div className="w-16 shrink-0">
+              <p className={`text-xs font-medium ${day.isToday ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {format(day.date, 'EEE')}
+              </p>
+              <p className={`text-2xl font-serif ${day.isToday ? 'text-foreground' : 'text-foreground/70'}`}>
+                {format(day.date, 'd')}
+              </p>
+            </div>
+
+            {/* Divider */}
+            <div className={`w-px self-stretch ${day.isToday ? 'bg-foreground/15' : 'bg-foreground/10'}`} />
+
+            {/* Items */}
+            <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+              {day.dayScheduled.length === 0 && day.dayEvents.length === 0 && (
+                <p className="text-xs text-muted-foreground/50 italic">No items</p>
+              )}
+              {day.dayEvents.map((e, idx) => (
+                <p key={`ev-${idx}`} className="text-xs text-foreground/70 truncate">
+                  ✓ <span className="line-through">{patterns.find(p => p.id === e.patternId)?.name}</span>
                 </p>
-              </div>)}
-            {day.dayScheduled.length > 2 && <p className="text-[10px] text-muted-foreground mt-1">
-                +{day.dayScheduled.length - 2}
-              </p>}
-          </motion.button>)}
+              ))}
+              {day.dayScheduled.slice(0, 3).map(s => (
+                <p key={s.id} className="text-xs text-foreground/60 truncate">
+                  ○ {s.pattern?.name}
+                </p>
+              ))}
+              {day.dayScheduled.length > 3 && (
+                <p className="text-[10px] text-muted-foreground">+{day.dayScheduled.length - 3} more</p>
+              )}
+            </div>
+
+            {/* Intensity dot */}
+            {day.intensity !== 'none' && (
+              <div className={`w-2 h-2 rounded-full shrink-0 ${
+                day.intensity === 'heavy' ? 'fixation-heavy' : day.intensity === 'medium' ? 'fixation-medium' : 'fixation-light'
+              }`} />
+            )}
+          </motion.button>
+        ))}
       </div>
     </div>;
 }
