@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 35 60% 97%;
+    --background: 42 70% 95%;
     --foreground: 20 30% 12%;
 
     --card: 35 50% 95%;
@@ -93,8 +93,10 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
     font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(180deg, hsl(45 80% 92%) 0%, hsl(30 75% 88%) 35%, hsl(15 80% 78%) 70%, hsl(8 70% 68%) 100%);
+    min-height: 100vh;
   }
   h1, h2, h3 {
     font-family: 'Instrument Serif', serif;
