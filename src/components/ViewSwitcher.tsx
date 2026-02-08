@@ -12,7 +12,7 @@ export function ViewSwitcher({ view, onChange }: ViewSwitcherProps) {
   ];
 
   return (
-    <div className="flex mx-6 bg-secondary rounded-full p-1 gap-1">
+    <div className="flex mx-6 glass rounded-full p-1 gap-1">
       {views.map(v => (
         <button
           key={v.key}
