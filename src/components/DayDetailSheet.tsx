@@ -44,7 +44,7 @@ export function DayDetailSheet({ date, items, onClose, onLogNow, onSkip, onDelet
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 glass-strong rounded-t-2xl shadow-soft max-h-[60vh] overflow-y-auto"
+            className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-2xl shadow-soft max-h-[60vh] overflow-y-auto border-t border-border"
           >
             <div className="p-6">
               {/* Handle */}
@@ -68,7 +68,7 @@ export function DayDetailSheet({ date, items, onClose, onLogNow, onSkip, onDelet
                   {items.map((item, i) => (
                     <div
                       key={`${item.patternId}-${i}`}
-                      className="p-4 rounded-xl glass"
+                      className="p-4 rounded-xl bg-secondary border border-border"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
