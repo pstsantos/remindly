@@ -41,8 +41,8 @@ const Index = () => {
     });
   };
 
-  const handleLog = (patternId: string, difficulty: 'easy' | 'medium' | 'hard', fixation: 'light' | 'medium' | 'heavy', problemName?: string) => {
-    const result = store.logPractice(patternId, difficulty, fixation, problemName);
+  const handleLog = (patternId: string, difficulty: 'easy' | 'medium' | 'hard', fixation: 'light' | 'medium' | 'heavy', problemName?: string, date?: string) => {
+    const result = store.logPractice(patternId, difficulty, fixation, problemName, date);
     toast('Practice logged ✓', {
       description: `Next revisit booked: ${format(new Date(result.occurrence.date + 'T00:00:00'), 'MMM d')}`,
     });
