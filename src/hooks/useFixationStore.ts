@@ -134,9 +134,19 @@ export function useFixationStore() {
       p.id === patternId ? { ...p, successCount: p.successCount + 1 } : p
     ));
 
-    // Remove ALL old scheduled for this pattern and rebook everything relative to the practice date
+    // Remove only the specific fulfilled occurrence (matching this pattern + logged date or earlier),
+    // keep all other scheduled sessions intact so multiple logs don't clobber each other
     setScheduled(prev => {
-      const filtered = prev.filter(s => s.patternId !== patternId);
+      // Remove at most one occurrence for this pattern on or before the logged date (the one being fulfilled)
+      let removedOne = false;
+      const filtered = prev.filter(s => {
+        if (!removedOne && s.patternId === patternId && s.date <= logDate) {
+          removedOne = true;
+          return false; // remove this fulfilled occurrence
+        }
+        return true;
+      });
+
       const pattern = patterns.find(p => p.id === patternId);
       const newSuccess = (pattern?.successCount || 0) + 1;
       const futureOccurrences = bookAllFutureOccurrences(
