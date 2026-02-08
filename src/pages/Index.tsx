@@ -158,6 +158,7 @@ const Index = () => {
         onAddPath={(name) => store.addPath(name)}
         onAddPattern={(name, pathId, count) => store.addPattern(name, pathId, count)}
         onLog={handleLog}
+        onDelete={handleDeleteRequest}
       />
 
       {/* Delete confirmation */}
