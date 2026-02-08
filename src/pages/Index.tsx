@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Plus, BarChart3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -21,6 +22,7 @@ const Index = () => {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const store = useFixationStore();
+  const navigate = useNavigate();
 
   const todayItems = store.getTodayScheduled();
   const todayItem = todayItems[0];
@@ -83,11 +85,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto relative pb-24">
-      {/* Date pill */}
-      <div className="flex justify-center pt-6">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-6 pt-6">
         <div className="px-4 py-1.5 rounded-full border border-border text-sm text-muted-foreground bg-card shadow-card">
           {format(new Date(), 'EEEE, d MMMM')}
         </div>
+        <button
+          onClick={() => navigate('/stats')}
+          className="p-2 rounded-full hover:bg-secondary transition-colors"
+          aria-label="Progress"
+        >
+          <BarChart3 className="w-4.5 h-4.5 text-muted-foreground" />
+        </button>
       </div>
 
       <AffirmationHeader />
