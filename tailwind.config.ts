@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        serif: ['Instrument Serif', 'serif'],
+        sans: ['DM Sans', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -56,6 +60,11 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+        },
+        fixation: {
+          light: "hsl(var(--fixation-light))",
+          medium: "hsl(var(--fixation-medium))",
+          heavy: "hsl(var(--fixation-heavy))",
         },
       },
       borderRadius: {
