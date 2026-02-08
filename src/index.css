@@ -101,7 +101,7 @@
   body {
     @apply text-foreground;
     font-family: 'DM Sans', sans-serif;
-    background: linear-gradient(170deg, hsl(48 85% 90%) 0%, hsl(35 75% 82%) 20%, hsl(22 65% 72%) 45%, hsl(12 55% 65%) 70%, hsl(355 45% 55%) 90%, hsl(345 40% 50%) 100%);
+    background: linear-gradient(170deg, hsl(48 88% 89%) 0%, hsl(35 80% 80%) 20%, hsl(21 72% 68%) 45%, hsl(10 65% 60%) 70%, hsl(352 55% 50%) 90%, hsl(342 50% 44%) 100%);
     background-attachment: fixed;
     min-height: 100vh;
   }
