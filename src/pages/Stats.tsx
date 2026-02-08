@@ -35,7 +35,7 @@ const Stats = () => {
   }, [store.problems, patternDetails]);
 
   return (
-    <div className="min-h-screen max-w-2xl mx-auto pb-16 px-4 md:px-0 md:py-8 md:my-4 md:rounded-2xl md:border md:border-foreground/10 md:shadow-soft">
+    <div className="min-h-screen max-w-2xl mx-auto pb-16 px-4 md:px-0 md:py-8 md:my-4 md:rounded-2xl md:border md:border-foreground/10 md:shadow-soft md:bg-white/10 md:backdrop-blur-sm">
       {/* Header */}
       <div className="flex items-center gap-3 px-6 pt-6 pb-2">
         <button
