@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -15,7 +16,7 @@
     --popover: 35 50% 96%;
     --popover-foreground: 20 30% 12%;
 
-    --primary: 15 80% 55%;
+    --primary: 15 80% 71%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 35 45% 90%;
