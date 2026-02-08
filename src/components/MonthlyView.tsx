@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
+import { useMemo, useState } from 'react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths } from 'date-fns';
 import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ScheduledOccurrence, PracticeEvent } from '@/types/fixation';
 
 interface MonthlyViewProps {
@@ -10,10 +11,12 @@ interface MonthlyViewProps {
 }
 
 export function MonthlyView({ scheduled, events, onDayClick }: MonthlyViewProps) {
+  const [displayMonth, setDisplayMonth] = useState(() => new Date());
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+
   const { days, padding } = useMemo(() => {
-    const now = new Date();
-    const start = startOfMonth(now);
-    const end = endOfMonth(now);
+    const start = startOfMonth(displayMonth);
+    const end = endOfMonth(displayMonth);
     const allDays = eachDayOfInterval({ start, end });
 
     const daysWithData = allDays.map(date => {
@@ -22,14 +25,14 @@ export function MonthlyView({ scheduled, events, onDayClick }: MonthlyViewProps)
       const eventCount = events.filter(e => e.date === dateStr).length;
       const heavyEvents = events.filter(e => e.date === dateStr && e.fixationLevel === 'heavy').length;
       const intensity = heavyEvents > 0 ? 3 : eventCount > 0 ? 2 : scheduledCount > 0 ? 1 : 0;
-      return { date, dateStr, intensity, isToday: dateStr === format(new Date(), 'yyyy-MM-dd') };
+      return { date, dateStr, intensity, isToday: dateStr === todayStr };
     });
 
     const firstDayOfWeek = getDay(start);
     const padding = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
 
     return { days: daysWithData, padding };
-  }, [scheduled, events]);
+  }, [scheduled, events, displayMonth, todayStr]);
 
   const intensityColors = [
     'bg-secondary',
@@ -38,11 +41,32 @@ export function MonthlyView({ scheduled, events, onDayClick }: MonthlyViewProps)
     'bg-primary/70',
   ];
 
+  const handlePrev = () => setDisplayMonth(prev => subMonths(prev, 1));
+  const handleNext = () => setDisplayMonth(prev => addMonths(prev, 1));
+
   return (
     <div className="px-6">
-      <h3 className="text-xl font-serif text-foreground mb-4">
-        {days.length > 0 ? format(days[0].date, 'MMMM yyyy') : ''}
-      </h3>
+      {/* Month navigation */}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={handlePrev}
+          className="p-2 rounded-lg hover:bg-secondary transition-colors"
+          aria-label="Previous month"
+        >
+          <ChevronLeft className="w-5 h-5 text-foreground/70" />
+        </button>
+        <h3 className="text-xl font-serif text-foreground">
+          {format(displayMonth, 'MMMM yyyy')}
+        </h3>
+        <button
+          onClick={handleNext}
+          className="p-2 rounded-lg hover:bg-secondary transition-colors"
+          aria-label="Next month"
+        >
+          <ChevronRight className="w-5 h-5 text-foreground/70" />
+        </button>
+      </div>
+
       <div className="grid grid-cols-7 gap-1">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
           <p key={i} className="text-center text-xs text-muted-foreground py-1">{d}</p>
