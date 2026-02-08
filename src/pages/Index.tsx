@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, BarChart3 } from 'lucide-react';
+import { Plus, BarChart3, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -90,13 +90,26 @@ const Index = () => {
         <div className="px-4 py-1.5 rounded-full border border-border text-sm text-muted-foreground bg-card shadow-card">
           {format(new Date(), 'EEEE, d MMMM')}
         </div>
-        <button
-          onClick={() => navigate('/stats')}
-          className="p-2 rounded-full hover:bg-secondary transition-colors"
-          aria-label="Progress"
-        >
-          <BarChart3 className="w-4.5 h-4.5 text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => {
+              store.resetForTesting();
+              toast('Reset complete.', { description: 'Logs and schedule cleared. Patterns kept.' });
+            }}
+            className="p-2 rounded-full hover:bg-secondary transition-colors"
+            aria-label="Reset for testing"
+            title="Reset logs (testing)"
+          >
+            <RotateCcw className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button
+            onClick={() => navigate('/stats')}
+            className="p-2 rounded-full hover:bg-secondary transition-colors"
+            aria-label="Progress"
+          >
+            <BarChart3 className="w-4.5 h-4.5 text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       <AffirmationHeader />
