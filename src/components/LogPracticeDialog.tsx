@@ -53,6 +53,11 @@ export function LogPracticeDialog({
       const p = onAddPath(newPathName.trim());
       pathId = p.id;
     }
+    // Auto-create a default path if none exists and none entered
+    if (!pathId && paths.length === 0 && !newPathName.trim()) {
+      const p = onAddPath('General');
+      pathId = p.id;
+    }
     if (!pathId) return;
     if (newPatternName.trim()) {
       const pat = onAddPattern(newPatternName.trim(), pathId);
@@ -172,7 +177,7 @@ export function LogPracticeDialog({
                     />
                     <Button
                       onClick={handleCreateAndSelect}
-                      disabled={!newPatternName.trim() || (!selectedPathId && !newPathName.trim())}
+                      disabled={!newPatternName.trim() || (!selectedPathId && !newPathName.trim() && paths.length > 0)}
                       size="sm"
                       className="rounded-xl bg-foreground text-background hover:bg-foreground/90"
                     >
