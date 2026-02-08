@@ -114,16 +114,14 @@ const Stats = () => {
                         {problems.map((problem, i) => (
                           <li
                             key={problem.id}
-                            className="flex items-baseline justify-between text-sm"
+                            className="flex items-center justify-between text-sm"
                           >
                             <span className="text-foreground">• {problem.name}</span>
-                            <div className="flex items-baseline gap-2 ml-3 shrink-0">
+                            <div className="flex items-center gap-2 ml-3 shrink-0">
                               <span className="text-xs text-muted-foreground">
                                 {format(new Date(problem.date + 'T00:00:00'), 'MMM d')}
                               </span>
-                              <span className="text-[11px] text-muted-foreground/70">
-                                {i + 1}/{problems.length}
-                              </span>
+                              <ProgressIcons pattern={pattern} problems={problems.slice(0, i + 1)} compact />
                             </div>
                           </li>
                         ))}
