@@ -56,7 +56,7 @@ export function MonthlyView({ scheduled, events, onDayClick }: MonthlyViewProps)
         >
           <ChevronLeft className="w-5 h-5 text-foreground/70" />
         </button>
-        <h3 className="text-xl font-serif text-foreground">
+        <h3 className="font-medium text-foreground/80 text-2xl">
           {format(displayMonth, 'MMMM yyyy')}
         </h3>
         <button
