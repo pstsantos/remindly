@@ -100,12 +100,7 @@ const Stats = () => {
                       </span>
                     </div>
                     <PatternPills path={path} />
-                    <div className="flex items-center gap-3">
-                      <ProgressIcons pattern={pattern} problems={problems} />
-                      <span className="text-xs text-muted-foreground">
-                        {problems.length} practiced
-                      </span>
-                    </div>
+                    <ProgressIcons pattern={pattern} problems={problems} />
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
@@ -116,15 +111,20 @@ const Stats = () => {
                       </p>
                     ) : (
                       <ul className="space-y-2">
-                        {problems.map((problem) => (
+                        {problems.map((problem, i) => (
                           <li
                             key={problem.id}
                             className="flex items-baseline justify-between text-sm"
                           >
                             <span className="text-foreground">• {problem.name}</span>
-                            <span className="text-xs text-muted-foreground ml-3 shrink-0">
-                              {format(new Date(problem.date + 'T00:00:00'), 'MMM d')}
-                            </span>
+                            <div className="flex items-baseline gap-2 ml-3 shrink-0">
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(problem.date + 'T00:00:00'), 'MMM d')}
+                              </span>
+                              <span className="text-[11px] text-muted-foreground/70">
+                                {i + 1}/{problems.length}
+                              </span>
+                            </div>
                           </li>
                         ))}
                       </ul>
