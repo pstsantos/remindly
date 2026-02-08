@@ -87,7 +87,7 @@ const Index = () => {
     <div className="min-h-screen bg-background max-w-lg mx-auto relative pb-24">
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 pt-6">
-        <div className="px-4 py-1.5 rounded-full border border-border text-sm text-muted-foreground bg-card shadow-card">
+        <div className="px-4 py-1.5 rounded-full text-sm text-foreground/70 glass">
           {format(new Date(), 'EEEE, d MMMM')}
         </div>
         <div className="flex items-center gap-1">
@@ -143,7 +143,7 @@ const Index = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setLogOpen(true)}
-        className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-foreground text-background shadow-soft flex items-center justify-center z-50"
+        className="fixed bottom-8 right-8 w-14 h-14 rounded-full glass-strong text-foreground shadow-soft flex items-center justify-center z-50"
       >
         <Plus className="w-6 h-6" />
       </motion.button>

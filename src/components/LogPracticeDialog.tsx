@@ -118,7 +118,7 @@ export function LogPracticeDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md rounded-2xl border-border bg-card">
+      <DialogContent className="sm:max-w-md rounded-2xl glass-strong border-white/20">
         <DialogHeader>
           <DialogTitle className="font-serif text-2xl">
             {step === 1 && 'Log Practice'}

@@ -45,7 +45,7 @@ export function MonthlyView({ scheduled, events, onDayClick }: MonthlyViewProps)
   const handleNext = () => setDisplayMonth(prev => addMonths(prev, 1));
 
   return (
-    <div className="px-6">
+    <div className="px-6 glass rounded-2xl py-5 mx-6">
       {/* Month navigation */}
       <div className="flex items-center justify-between mb-4">
         <button
