@@ -84,7 +84,7 @@ const Index = () => {
   ] : [];
 
   return (
-    <div className="min-h-screen bg-background max-w-lg mx-auto relative pb-24">
+    <div className="min-h-screen max-w-2xl mx-auto relative pb-24 px-4 md:px-0 md:py-8">
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 pt-6">
         <div className="px-4 py-1.5 rounded-full text-sm text-foreground/70 glass">
