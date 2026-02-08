@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Path, Pattern } from '@/types/fixation';
-import { Check, ArrowRight, Plus } from 'lucide-react';
+import { ArrowRight, Plus, Search } from 'lucide-react';
+import { PracticeSetStepper } from '@/components/PracticeSetStepper';
+import { PatternPills } from '@/components/PatternPills';
 
 interface LogPracticeDialogProps {
   open: boolean;
@@ -13,8 +15,8 @@ interface LogPracticeDialogProps {
   paths: Path[];
   patterns: Pattern[];
   onAddPath: (name: string) => Path;
-  onAddPattern: (name: string, pathId: string) => Pattern;
-  onLog: (patternId: string, difficulty: 'easy' | 'medium' | 'hard', fixation: 'light' | 'medium' | 'heavy') => void;
+  onAddPattern: (name: string, pathId: string, practiceSetCount?: number) => Pattern;
+  onLog: (patternId: string, difficulty: 'easy' | 'medium' | 'hard', fixation: 'light' | 'medium' | 'heavy', problemName?: string) => void;
 }
 
 type Step = 1 | 2 | 3;
@@ -30,6 +32,9 @@ export function LogPracticeDialog({
   const [selectedPathId, setSelectedPathId] = useState<string>('');
   const [showNewPath, setShowNewPath] = useState(paths.length === 0);
   const [showNewPattern, setShowNewPattern] = useState(patterns.length === 0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [practiceSetCount, setPracticeSetCount] = useState(5);
+  const [problemName, setProblemName] = useState('');
 
   const reset = () => {
     setStep(1);
@@ -40,6 +45,9 @@ export function LogPracticeDialog({
     setSelectedPathId('');
     setShowNewPath(paths.length === 0);
     setShowNewPattern(patterns.length === 0);
+    setSearchQuery('');
+    setPracticeSetCount(5);
+    setProblemName('');
   };
 
   const handleClose = (o: boolean) => {
@@ -53,14 +61,13 @@ export function LogPracticeDialog({
       const p = onAddPath(newPathName.trim());
       pathId = p.id;
     }
-    // Auto-create a default path if none exists and none entered
     if (!pathId && paths.length === 0 && !newPathName.trim()) {
       const p = onAddPath('General');
       pathId = p.id;
     }
     if (!pathId) return;
     if (newPatternName.trim()) {
-      const pat = onAddPattern(newPatternName.trim(), pathId);
+      const pat = onAddPattern(newPatternName.trim(), pathId, practiceSetCount);
       setSelectedPatternId(pat.id);
       setShowNewPattern(false);
       setStep(2);
@@ -79,13 +86,23 @@ export function LogPracticeDialog({
 
   const handleFixation = (f: 'light' | 'medium' | 'heavy') => {
     if (!selectedPatternId || !selectedDifficulty) return;
-    onLog(selectedPatternId, selectedDifficulty, f);
+    onLog(selectedPatternId, selectedDifficulty, f, problemName.trim() || undefined);
     handleClose(false);
   };
 
-  const filteredPatterns = selectedPathId
-    ? patterns.filter(p => p.pathId === selectedPathId)
-    : patterns;
+  const filteredPatterns = useMemo(() => {
+    let result = selectedPathId
+      ? patterns.filter(p => p.pathId === selectedPathId)
+      : patterns;
+
+    if (searchQuery.trim()) {
+      const lower = searchQuery.toLowerCase();
+      result = result.filter(p => p.name.toLowerCase().includes(lower));
+    }
+
+    // Sort recent patterns first (by successCount descending as proxy for activity)
+    return result.sort((a, b) => b.successCount - a.successCount);
+  }, [patterns, selectedPathId, searchQuery]);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -146,19 +163,39 @@ export function LogPracticeDialog({
                 )}
               </div>
 
+              {/* Pattern search */}
+              {patterns.length > 0 && (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search patterns…"
+                    className="rounded-xl pl-9"
+                  />
+                </div>
+              )}
+
               {/* Pattern select */}
               <div>
                 <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">Pattern</Label>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {filteredPatterns.map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => handleSelectExisting(p.id)}
-                      className="w-full text-left px-4 py-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors text-sm"
-                    >
-                      {p.name}
-                    </button>
-                  ))}
+                  {filteredPatterns.map(p => {
+                    const path = paths.find(pa => pa.id === p.pathId);
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => handleSelectExisting(p.id)}
+                        className="w-full text-left px-4 py-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors"
+                      >
+                        <span className="text-sm block">{p.name}</span>
+                        <PatternPills path={path} className="mt-1" />
+                      </button>
+                    );
+                  })}
+                  {filteredPatterns.length === 0 && searchQuery && (
+                    <p className="text-sm text-muted-foreground py-2 text-center">No patterns found</p>
+                  )}
                 </div>
                 {!showNewPattern ? (
                   <button
@@ -168,21 +205,24 @@ export function LogPracticeDialog({
                     <Plus className="w-3 h-3" /> New pattern
                   </button>
                 ) : (
-                  <div className="mt-2 flex gap-2">
-                    <Input
-                      value={newPatternName}
-                      onChange={e => setNewPatternName(e.target.value)}
-                      placeholder="e.g. Binary Tree — Right Side View"
-                      className="rounded-xl flex-1"
-                    />
-                    <Button
-                      onClick={handleCreateAndSelect}
-                      disabled={!newPatternName.trim() || (!selectedPathId && !newPathName.trim() && paths.length > 0)}
-                      size="sm"
-                      className="rounded-xl bg-foreground text-background hover:bg-foreground/90"
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
+                  <div className="mt-3 space-y-3">
+                    <div className="flex gap-2">
+                      <Input
+                        value={newPatternName}
+                        onChange={e => setNewPatternName(e.target.value)}
+                        placeholder="e.g. Binary Tree — Right Side View"
+                        className="rounded-xl flex-1"
+                      />
+                      <Button
+                        onClick={handleCreateAndSelect}
+                        disabled={!newPatternName.trim() || (!selectedPathId && !newPathName.trim() && paths.length > 0)}
+                        size="sm"
+                        className="rounded-xl bg-foreground text-background hover:bg-foreground/90"
+                      >
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <PracticeSetStepper value={practiceSetCount} onChange={setPracticeSetCount} />
                   </div>
                 )}
               </div>
@@ -197,6 +237,20 @@ export function LogPracticeDialog({
               exit={{ opacity: 0, x: -20 }}
               className="space-y-3"
             >
+              {/* Optional problem name */}
+              <div>
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">
+                  Problem name <span className="normal-case text-muted-foreground/60">(optional)</span>
+                </Label>
+                <Input
+                  value={problemName}
+                  onChange={e => setProblemName(e.target.value)}
+                  placeholder="e.g. LeetCode #199"
+                  className="rounded-xl"
+                />
+              </div>
+
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground block">Difficulty</Label>
               {(['easy', 'medium', 'hard'] as const).map(d => (
                 <button
                   key={d}

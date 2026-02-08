@@ -9,37 +9,77 @@ import { useFixationStore } from '@/hooks/useFixationStore';
 import { AffirmationHeader } from '@/components/AffirmationHeader';
 import { TodayCard, EmptyTodayCard } from '@/components/TodayCard';
 import { LogPracticeDialog } from '@/components/LogPracticeDialog';
+import { DeletePatternDialog } from '@/components/DeletePatternDialog';
 import { ViewSwitcher } from '@/components/ViewSwitcher';
 import { WeeklyView } from '@/components/WeeklyView';
 import { MonthlyView } from '@/components/MonthlyView';
+import { DayDetailSheet } from '@/components/DayDetailSheet';
 
 const Index = () => {
   const [view, setView] = useState<ViewMode>('daily');
   const [logOpen, setLogOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const store = useFixationStore();
 
   const todayItems = store.getTodayScheduled();
-  const todayItem = todayItems[0]; // Show only one in daily view
+  const todayItem = todayItems[0];
 
   const handleMarkPracticed = () => {
     if (!todayItem?.pattern) return;
     setLogOpen(true);
   };
 
-  const handleSkip = () => {
-    if (!todayItem?.pattern) return;
-    store.skipToday(todayItem.patternId);
+  const handleSkip = (patternId?: string) => {
+    const id = patternId || todayItem?.patternId;
+    if (!id) return;
+    store.skipToday(id);
     toast('Rescheduled for tomorrow.', {
       description: 'No pressure. It\'ll be here when you\'re ready.',
     });
   };
 
-  const handleLog = (patternId: string, difficulty: 'easy' | 'medium' | 'hard', fixation: 'light' | 'medium' | 'heavy') => {
-    const result = store.logPractice(patternId, difficulty, fixation);
+  const handleLog = (patternId: string, difficulty: 'easy' | 'medium' | 'hard', fixation: 'light' | 'medium' | 'heavy', problemName?: string) => {
+    const result = store.logPractice(patternId, difficulty, fixation, problemName);
     toast('Practice logged ✓', {
       description: `Next revisit booked: ${format(new Date(result.occurrence.date + 'T00:00:00'), 'MMM d')}`,
     });
+    setSelectedDay(null);
   };
+
+  const handleDeleteRequest = (patternId: string) => {
+    const pattern = store.patterns.find(p => p.id === patternId);
+    if (pattern) setDeleteTarget({ id: patternId, name: pattern.name });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!deleteTarget) return;
+    store.deletePattern(deleteTarget.id);
+    toast('Pattern deleted.', { description: 'All future revisits removed.' });
+    setDeleteTarget(null);
+    setSelectedDay(null);
+  };
+
+  const handleDayClick = (dateStr: string) => {
+    setSelectedDay(dateStr);
+  };
+
+  // Build day detail items
+  const dayDetailItems = selectedDay ? [
+    ...store.getScheduledForDate(selectedDay).map(s => ({
+      patternId: s.patternId,
+      pattern: s.pattern,
+      path: s.path,
+      type: 'scheduled' as const,
+    })),
+    ...store.getEventsForDate(selectedDay).map(e => ({
+      patternId: e.patternId,
+      pattern: e.pattern,
+      path: e.path,
+      type: 'completed' as const,
+      event: e,
+    })),
+  ] : [];
 
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto relative pb-24">
@@ -64,8 +104,10 @@ const Index = () => {
             <TodayCard
               pattern={todayItem.pattern}
               path={todayItem.path}
+              problems={store.getProblemsForPattern(todayItem.patternId)}
               onMarkPracticed={handleMarkPracticed}
-              onSkip={handleSkip}
+              onSkip={() => handleSkip()}
+              onDelete={() => handleDeleteRequest(todayItem.patternId)}
             />
           ) : (
             <EmptyTodayCard />
@@ -84,6 +126,8 @@ const Index = () => {
           scheduled={store.scheduled}
           patterns={store.patterns}
           paths={store.paths}
+          events={store.events}
+          onDayClick={handleDayClick}
         />
       )}
 
@@ -91,6 +135,7 @@ const Index = () => {
         <MonthlyView
           scheduled={store.scheduled}
           events={store.events}
+          onDayClick={handleDayClick}
         />
       )}
 
@@ -111,8 +156,32 @@ const Index = () => {
         paths={store.paths}
         patterns={store.patterns}
         onAddPath={(name) => store.addPath(name)}
-        onAddPattern={(name, pathId) => store.addPattern(name, pathId)}
+        onAddPattern={(name, pathId, count) => store.addPattern(name, pathId, count)}
         onLog={handleLog}
+      />
+
+      {/* Delete confirmation */}
+      <DeletePatternDialog
+        open={!!deleteTarget}
+        patternName={deleteTarget?.name || ''}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      {/* Day detail sheet */}
+      <DayDetailSheet
+        date={selectedDay}
+        items={dayDetailItems}
+        onClose={() => setSelectedDay(null)}
+        onLogNow={(patternId) => {
+          setSelectedDay(null);
+          setLogOpen(true);
+        }}
+        onSkip={(patternId) => {
+          handleSkip(patternId);
+          setSelectedDay(null);
+        }}
+        onDelete={handleDeleteRequest}
       />
     </div>
   );

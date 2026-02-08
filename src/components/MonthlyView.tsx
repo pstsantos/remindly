@@ -1,15 +1,16 @@
 import { useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, startOfWeek } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import { motion } from 'framer-motion';
 import type { ScheduledOccurrence, PracticeEvent } from '@/types/fixation';
 
 interface MonthlyViewProps {
   scheduled: ScheduledOccurrence[];
   events: PracticeEvent[];
+  onDayClick: (dateStr: string) => void;
 }
 
-export function MonthlyView({ scheduled, events }: MonthlyViewProps) {
-  const { days, monthLabel } = useMemo(() => {
+export function MonthlyView({ scheduled, events, onDayClick }: MonthlyViewProps) {
+  const { days, padding } = useMemo(() => {
     const now = new Date();
     const start = startOfMonth(now);
     const end = endOfMonth(now);
@@ -24,15 +25,11 @@ export function MonthlyView({ scheduled, events }: MonthlyViewProps) {
       return { date, dateStr, intensity, isToday: dateStr === format(new Date(), 'yyyy-MM-dd') };
     });
 
-    // Pad start for alignment
     const firstDayOfWeek = getDay(start);
     const padding = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
 
-    return { days: daysWithData, monthLabel: format(now, 'MMMM yyyy'), padding };
+    return { days: daysWithData, padding };
   }, [scheduled, events]);
-
-  const firstDayOfWeek = getDay(startOfMonth(new Date()));
-  const padding = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
 
   const intensityColors = [
     'bg-secondary',
@@ -43,7 +40,9 @@ export function MonthlyView({ scheduled, events }: MonthlyViewProps) {
 
   return (
     <div className="px-6">
-      <h3 className="text-xl font-serif text-foreground mb-4">{days.length > 0 ? format(days[0].date, 'MMMM yyyy') : ''}</h3>
+      <h3 className="text-xl font-serif text-foreground mb-4">
+        {days.length > 0 ? format(days[0].date, 'MMMM yyyy') : ''}
+      </h3>
       <div className="grid grid-cols-7 gap-1">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
           <p key={i} className="text-center text-xs text-muted-foreground py-1">{d}</p>
@@ -52,17 +51,18 @@ export function MonthlyView({ scheduled, events }: MonthlyViewProps) {
           <div key={`pad-${i}`} />
         ))}
         {days.map((day, i) => (
-          <motion.div
+          <motion.button
             key={day.dateStr}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: i * 0.01 }}
-            className={`aspect-square rounded-lg flex items-center justify-center text-xs transition-colors ${
+            onClick={() => onDayClick(day.dateStr)}
+            className={`aspect-square rounded-lg flex items-center justify-center text-xs transition-colors cursor-pointer hover:ring-1 hover:ring-foreground/20 ${
               intensityColors[day.intensity]
             } ${day.isToday ? 'ring-2 ring-primary' : ''}`}
           >
             {format(day.date, 'd')}
-          </motion.div>
+          </motion.button>
         ))}
       </div>
     </div>

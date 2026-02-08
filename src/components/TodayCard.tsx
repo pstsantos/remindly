@@ -1,16 +1,20 @@
 import { motion } from 'framer-motion';
-import type { Pattern, Path } from '@/types/fixation';
+import type { Pattern, Path, Problem } from '@/types/fixation';
 import { Button } from '@/components/ui/button';
-import { Check, SkipForward, ChevronDown } from 'lucide-react';
-import { format, addDays } from 'date-fns';
+import { Check, SkipForward, ChevronDown, MoreHorizontal, Trash2 } from 'lucide-react';
+import { format } from 'date-fns';
 import { useState } from 'react';
+import { ProgressIcons } from '@/components/ProgressIcons';
+import { PatternPills } from '@/components/PatternPills';
 
 interface TodayCardProps {
   pattern: Pattern;
   path?: Path;
+  problems: Problem[];
   nextRevisitDate?: string;
   onMarkPracticed: () => void;
   onSkip: () => void;
+  onDelete: () => void;
 }
 
 function getFixationLabel(count: number) {
@@ -20,7 +24,7 @@ function getFixationLabel(count: number) {
   return 'Mastering';
 }
 
-export function TodayCard({ pattern, path, nextRevisitDate, onMarkPracticed, onSkip }: TodayCardProps) {
+export function TodayCard({ pattern, path, problems, nextRevisitDate, onMarkPracticed, onSkip, onDelete }: TodayCardProps) {
   const [showMore, setShowMore] = useState(false);
 
   return (
@@ -37,12 +41,9 @@ export function TodayCard({ pattern, path, nextRevisitDate, onMarkPracticed, onS
         <h2 className="text-3xl font-serif leading-snug text-foreground mb-1">
           {pattern.name}
         </h2>
-        {path && (
-          <p className="text-sm text-foreground/70 mb-1">
-            Path: {path.name}
-          </p>
-        )}
-        <p className="text-sm text-foreground/50 mb-4">
+        <PatternPills path={path} className="mb-2" />
+        <ProgressIcons pattern={pattern} problems={problems} />
+        <p className="text-sm text-foreground/50 mt-2 mb-4">
           {getFixationLabel(pattern.successCount)} · Revisit #{pattern.successCount + 1}
         </p>
         {nextRevisitDate && (
@@ -71,7 +72,7 @@ export function TodayCard({ pattern, path, nextRevisitDate, onMarkPracticed, onS
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="mt-3 pt-3 border-t border-foreground/10"
+            className="mt-3 pt-3 border-t border-foreground/10 flex items-center gap-4"
           >
             <button
               onClick={onSkip}
@@ -79,6 +80,13 @@ export function TodayCard({ pattern, path, nextRevisitDate, onMarkPracticed, onS
             >
               <SkipForward className="w-4 h-4" />
               Skip today
+            </button>
+            <button
+              onClick={onDelete}
+              className="flex items-center gap-2 text-sm text-foreground/50 hover:text-destructive transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete
             </button>
           </motion.div>
         )}
