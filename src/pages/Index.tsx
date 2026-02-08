@@ -17,7 +17,7 @@ import { MonthlyView } from '@/components/MonthlyView';
 import { DayDetailSheet } from '@/components/DayDetailSheet';
 
 const Index = () => {
-  const [view, setView] = useState<ViewMode>('daily');
+  const [view, setView] = useState<ViewMode>('weekly');
   const [logOpen, setLogOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
@@ -120,29 +120,6 @@ const Index = () => {
       </div>
 
       {/* Views */}
-      {view === 'daily' && (
-        <div>
-          {todayItem?.pattern ? (
-            <TodayCard
-              pattern={todayItem.pattern}
-              path={todayItem.path}
-              problems={store.getProblemsForPattern(todayItem.patternId)}
-              onMarkPracticed={handleMarkPracticed}
-              onSkip={() => handleSkip()}
-              onDelete={() => handleDeleteRequest(todayItem.patternId)}
-            />
-          ) : (
-            <EmptyTodayCard />
-          )}
-
-          {todayItems.length > 1 && (
-            <p className="text-xs text-muted-foreground text-center mt-4">
-              +{todayItems.length - 1} more scheduled — see weekly view
-            </p>
-          )}
-        </div>
-      )}
-
       {view === 'weekly' && (
         <WeeklyView
           scheduled={store.scheduled}
