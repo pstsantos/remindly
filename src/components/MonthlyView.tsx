@@ -67,7 +67,7 @@ export function MonthlyView({ scheduled, events, onDayClick }: MonthlyViewProps)
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
           <p key={i} className="text-center text-xs text-muted-foreground py-1">{d}</p>
         ))}
@@ -81,9 +81,9 @@ export function MonthlyView({ scheduled, events, onDayClick }: MonthlyViewProps)
             animate={{ opacity: 1 }}
             transition={{ delay: i * 0.01 }}
             onClick={() => onDayClick(day.dateStr)}
-            className={`aspect-square rounded-lg flex items-center justify-center text-xs transition-colors cursor-pointer hover:ring-1 hover:ring-foreground/20 ${
-              intensityColors[day.intensity]
-            } ${day.isToday ? 'ring-2 ring-primary' : ''}`}
+            className={`aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-colors cursor-pointer hover:ring-1 hover:ring-foreground/20 glass ${
+              day.isToday ? 'ring-2 ring-primary' : ''
+            } ${day.intensity === 3 ? 'fixation-heavy text-primary-foreground' : day.intensity === 2 ? 'fixation-medium' : ''}`}
           >
             {format(day.date, 'd')}
           </motion.button>

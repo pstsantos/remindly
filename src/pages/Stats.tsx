@@ -35,12 +35,12 @@ const Stats = () => {
   }, [store.problems, patternDetails]);
 
   return (
-    <div className="min-h-screen bg-background max-w-lg mx-auto pb-16">
+    <div className="min-h-screen max-w-2xl mx-auto pb-16 px-4 md:px-0 md:py-8">
       {/* Header */}
       <div className="flex items-center gap-3 px-6 pt-6 pb-2">
         <button
           onClick={() => navigate('/')}
-          className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors"
+          className="p-2 -ml-2 rounded-full hover:bg-secondary/50 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
@@ -60,9 +60,9 @@ const Stats = () => {
           transition={{ duration: 0.4 }}
           className="mx-6 mb-6 flex gap-4"
         >
-          <AggregateChip label="Problems" value={aggregates.totalProblems} />
-          <AggregateChip label="Active" value={aggregates.activeCount} />
-          <AggregateChip label="Maintenance" value={aggregates.maintenanceCount} />
+          <AggregateChip label="Problems" value={aggregates.totalProblems} glass />
+          <AggregateChip label="Active" value={aggregates.activeCount} glass />
+          <AggregateChip label="Maintenance" value={aggregates.maintenanceCount} glass />
         </motion.div>
       )}
 
@@ -74,7 +74,7 @@ const Stats = () => {
           </p>
         </div>
       ) : (
-        <Accordion type="single" collapsible className="px-6">
+        <Accordion type="single" collapsible className="px-6 glass rounded-2xl py-2">
           {patternDetails.map(({ pattern, path, problems, status }, index) => (
             <motion.div
               key={pattern.id}
@@ -82,7 +82,7 @@ const Stats = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
             >
-              <AccordionItem value={pattern.id} className="border-b border-border">
+              <AccordionItem value={pattern.id} className="border-b border-border/30">
                 <AccordionTrigger className="hover:no-underline py-5">
                   <div className="flex flex-col items-start gap-2 text-left pr-4">
                     <div className="flex items-center gap-2.5">
@@ -138,9 +138,9 @@ const Stats = () => {
   );
 };
 
-function AggregateChip({ label, value }: { label: string; value: number }) {
+function AggregateChip({ label, value, glass: useGlass }: { label: string; value: number; glass?: boolean }) {
   return (
-    <div className="flex-1 rounded-lg border border-border bg-card px-3 py-2.5 shadow-card text-center">
+    <div className={`flex-1 rounded-xl px-3 py-2.5 text-center ${useGlass ? 'glass' : 'border border-border bg-card shadow-card'}`}>
       <p className="text-lg font-medium text-foreground">{value}</p>
       <p className="text-[11px] text-muted-foreground">{label}</p>
     </div>
