@@ -1,15 +1,17 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { motion } from 'framer-motion';
-import type { ScheduledOccurrence, Pattern, Path } from '@/types/fixation';
+import type { ScheduledOccurrence, Pattern, Path, PracticeEvent } from '@/types/fixation';
 
 interface WeeklyViewProps {
   scheduled: ScheduledOccurrence[];
   patterns: Pattern[];
   paths: Path[];
+  events: PracticeEvent[];
+  onDayClick: (dateStr: string) => void;
 }
 
-export function WeeklyView({ scheduled, patterns, paths }: WeeklyViewProps) {
+export function WeeklyView({ scheduled, patterns, paths, events, onDayClick }: WeeklyViewProps) {
   const weekDays = useMemo(() => {
     const start = startOfWeek(new Date(), { weekStartsOn: 1 });
     return Array.from({ length: 7 }, (_, i) => {
@@ -22,20 +24,28 @@ export function WeeklyView({ scheduled, patterns, paths }: WeeklyViewProps) {
           pattern: patterns.find(p => p.id === s.patternId),
           path: paths.find(pa => pa.id === patterns.find(p => p.id === s.patternId)?.pathId),
         }));
-      return { date, dateStr, dayScheduled, isToday: dateStr === format(new Date(), 'yyyy-MM-dd') };
+      const dayEvents = events.filter(e => e.date === dateStr);
+      const hasHeavy = dayEvents.some(e => e.fixationLevel === 'heavy');
+      const hasMedium = dayEvents.some(e => e.fixationLevel === 'medium');
+      return {
+        date, dateStr, dayScheduled, dayEvents,
+        isToday: dateStr === format(new Date(), 'yyyy-MM-dd'),
+        intensity: hasHeavy ? 'heavy' : hasMedium ? 'medium' : dayEvents.length > 0 ? 'light' : 'none',
+      };
     });
-  }, [scheduled, patterns, paths]);
+  }, [scheduled, patterns, paths, events]);
 
   return (
     <div className="px-6 grid grid-cols-7 gap-2">
       {weekDays.map((day, i) => (
-        <motion.div
+        <motion.button
           key={day.dateStr}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
-          className={`rounded-xl p-3 min-h-[100px] ${
-            day.isToday ? 'gradient-warm shadow-soft' : 'bg-card shadow-card'
+          onClick={() => onDayClick(day.dateStr)}
+          className={`rounded-xl p-3 min-h-[100px] text-left transition-all ${
+            day.isToday ? 'gradient-warm shadow-soft' : 'bg-card shadow-card hover:shadow-soft'
           }`}
         >
           <p className={`text-xs font-medium mb-1 ${day.isToday ? 'text-foreground' : 'text-muted-foreground'}`}>
@@ -44,6 +54,12 @@ export function WeeklyView({ scheduled, patterns, paths }: WeeklyViewProps) {
           <p className={`text-lg font-serif ${day.isToday ? 'text-foreground' : 'text-foreground/70'}`}>
             {format(day.date, 'd')}
           </p>
+          {day.intensity !== 'none' && (
+            <div className={`w-2 h-2 rounded-full mt-1 ${
+              day.intensity === 'heavy' ? 'fixation-heavy' :
+              day.intensity === 'medium' ? 'fixation-medium' : 'fixation-light'
+            }`} />
+          )}
           {day.dayScheduled.slice(0, 2).map(s => (
             <div key={s.id} className="mt-1">
               <p className="text-[10px] text-foreground/60 truncate">
@@ -53,10 +69,10 @@ export function WeeklyView({ scheduled, patterns, paths }: WeeklyViewProps) {
           ))}
           {day.dayScheduled.length > 2 && (
             <p className="text-[10px] text-muted-foreground mt-1">
-              +{day.dayScheduled.length - 2} more
+              +{day.dayScheduled.length - 2}
             </p>
           )}
-        </motion.div>
+        </motion.button>
       ))}
     </div>
   );

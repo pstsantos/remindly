@@ -10,6 +10,14 @@ export interface Pattern {
   name: string;
   pathId: string;
   successCount: number;
+  practiceSetCount: number; // default 5
+}
+
+export interface Problem {
+  id: string;
+  patternId: string;
+  name: string;
+  date: string; // YYYY-MM-DD
 }
 
 export interface PracticeEvent {
@@ -18,6 +26,7 @@ export interface PracticeEvent {
   patternId: string;
   difficulty: 'easy' | 'medium' | 'hard';
   fixationLevel: 'light' | 'medium' | 'heavy';
+  problemName?: string;
 }
 
 export interface ScheduledOccurrence {
