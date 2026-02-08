@@ -41,8 +41,8 @@ const Index = () => {
     });
   };
 
-  const handleLog = (patternId: string, problemName?: string, date?: string) => {
-    const result = store.logPractice(patternId, 'medium', 'medium', problemName, date);
+  const handleLog = (patternId: string, problemName?: string, date?: string, practiceSetCount?: number) => {
+    const result = store.logPractice(patternId, 'medium', 'medium', problemName, date, practiceSetCount);
     toast('Practice logged ✓', {
       description: `Next revisit booked: ${format(new Date(result.occurrence.date + 'T00:00:00'), 'MMM d')}`,
     });

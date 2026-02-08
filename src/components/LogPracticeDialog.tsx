@@ -20,7 +20,7 @@ interface LogPracticeDialogProps {
   patterns: Pattern[];
   onAddPath: (name: string) => Path;
   onAddPattern: (name: string, pathId: string, practiceSetCount?: number) => Pattern;
-  onLog: (patternId: string, problemName?: string, date?: string) => void;
+  onLog: (patternId: string, problemName?: string, date?: string, practiceSetCount?: number) => void;
   onDelete?: (patternId: string) => void;
 }
 
@@ -81,7 +81,7 @@ export function LogPracticeDialog({
   const handleSubmit = () => {
     if (!selectedPatternId) return;
     const dateStr = format(practiceDate, 'yyyy-MM-dd');
-    onLog(selectedPatternId, problemName.trim() || undefined, dateStr);
+    onLog(selectedPatternId, problemName.trim() || undefined, dateStr, practiceSetCount);
     handleClose(false);
   };
 
@@ -210,8 +210,8 @@ export function LogPracticeDialog({
                     key={p.id}
                     role="button"
                     tabIndex={0}
-                    onClick={() => setSelectedPatternId(p.id)}
-                    onKeyDown={(e) => e.key === 'Enter' && setSelectedPatternId(p.id)}
+                    onClick={() => { setSelectedPatternId(p.id); setPracticeSetCount(p.practiceSetCount); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { setSelectedPatternId(p.id); setPracticeSetCount(p.practiceSetCount); } }}
                     className={cn(
                       "w-full text-left px-4 py-3 rounded-xl transition-colors group cursor-pointer",
                       isSelected
@@ -277,6 +277,11 @@ export function LogPracticeDialog({
               </div>
             )}
           </div>
+
+          {/* Practice sets (always visible when a pattern is selected) */}
+          {selectedPatternId && (
+            <PracticeSetStepper value={practiceSetCount} onChange={setPracticeSetCount} />
+          )}
 
           {/* Problem name */}
           <div>

@@ -126,6 +126,7 @@ export function useFixationStore() {
     fixationLevel: 'light' | 'medium' | 'heavy',
     problemName?: string,
     dateStr?: string,
+    practiceSetCountOverride?: number,
   ) => {
     const logDate = dateStr || format(new Date(), 'yyyy-MM-dd');
     const referenceDate = dateStr ? new Date(dateStr + 'T00:00:00') : new Date();
@@ -140,8 +141,13 @@ export function useFixationStore() {
     }
 
     // Increment success count
+    // Update success count and optionally practiceSetCount
     setPatterns(prev => prev.map(p =>
-      p.id === patternId ? { ...p, successCount: p.successCount + 1 } : p
+      p.id === patternId ? {
+        ...p,
+        successCount: p.successCount + 1,
+        ...(practiceSetCountOverride != null ? { practiceSetCount: practiceSetCountOverride } : {}),
+      } : p
     ));
 
     // Remove only the specific fulfilled occurrence (matching this pattern + logged date or earlier),
@@ -163,11 +169,12 @@ export function useFixationStore() {
       }
 
       const pattern = patterns.find(p => p.id === patternId);
+      const effectivePSC = practiceSetCountOverride ?? pattern?.practiceSetCount ?? 5;
       const newSuccess = (pattern?.successCount || 0) + 1;
       const futureOccurrences = bookAllFutureOccurrences(
         patternId,
         newSuccess,
-        pattern?.practiceSetCount || 5,
+        effectivePSC,
         pace,
         fixationLevel,
         referenceDate,
@@ -178,11 +185,12 @@ export function useFixationStore() {
 
     // Return the first future occurrence for the toast
     const pattern = patterns.find(p => p.id === patternId);
+    const effectivePSC = practiceSetCountOverride ?? pattern?.practiceSetCount ?? 5;
     const newSuccess = (pattern?.successCount || 0) + 1;
     const futureOccurrences = bookAllFutureOccurrences(
       patternId,
       newSuccess,
-      pattern?.practiceSetCount || 5,
+      effectivePSC,
       pace,
       fixationLevel,
       referenceDate,
