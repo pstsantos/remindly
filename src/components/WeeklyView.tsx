@@ -85,7 +85,7 @@ export function WeeklyView({
           >
             {/* Day & date */}
             <div className="w-16 shrink-0">
-              <p className={`text-xs font-medium ${day.isToday ? 'text-foreground' : 'text-muted-foreground'}`}>
+              <p className={`text-sm font-semibold uppercase tracking-wide ${day.isToday ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {format(day.date, 'EEE')}
               </p>
               <p className={`text-2xl font-serif ${day.isToday ? 'text-foreground' : 'text-foreground/70'}`}>
