@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Path, Pattern } from '@/types/fixation';
-import { ArrowRight, Plus, Search } from 'lucide-react';
+import { ArrowRight, Plus, Search, Trash2 } from 'lucide-react';
 import { PracticeSetStepper } from '@/components/PracticeSetStepper';
 import { PatternPills } from '@/components/PatternPills';
 
@@ -17,12 +17,13 @@ interface LogPracticeDialogProps {
   onAddPath: (name: string) => Path;
   onAddPattern: (name: string, pathId: string, practiceSetCount?: number) => Pattern;
   onLog: (patternId: string, difficulty: 'easy' | 'medium' | 'hard', fixation: 'light' | 'medium' | 'heavy', problemName?: string) => void;
+  onDelete?: (patternId: string) => void;
 }
 
 type Step = 1 | 2 | 3;
 
 export function LogPracticeDialog({
-  open, onOpenChange, paths, patterns, onAddPath, onAddPattern, onLog
+  open, onOpenChange, paths, patterns, onAddPath, onAddPattern, onLog, onDelete
 }: LogPracticeDialogProps) {
   const [step, setStep] = useState<Step>(1);
   const [selectedPatternId, setSelectedPatternId] = useState<string>('');
@@ -186,10 +187,27 @@ export function LogPracticeDialog({
                       <button
                         key={p.id}
                         onClick={() => handleSelectExisting(p.id)}
-                        className="w-full text-left px-4 py-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors"
+                        className="w-full text-left px-4 py-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors group"
                       >
-                        <span className="text-sm block">{p.name}</span>
-                        <PatternPills path={path} className="mt-1" />
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm block">{p.name}</span>
+                            <PatternPills path={path} className="mt-1" />
+                          </div>
+                          {onDelete && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete(p.id);
+                                handleClose(false);
+                              }}
+                              className="p-1.5 rounded-lg text-muted-foreground/0 group-hover:text-muted-foreground hover:!text-destructive transition-colors shrink-0 ml-2"
+                              title="Delete pattern"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </button>
                     );
                   })}
