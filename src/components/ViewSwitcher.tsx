@@ -7,7 +7,6 @@ interface ViewSwitcherProps {
 
 export function ViewSwitcher({ view, onChange }: ViewSwitcherProps) {
   const views: { key: ViewMode; label: string }[] = [
-    { key: 'daily', label: 'Day' },
     { key: 'weekly', label: 'Week' },
     { key: 'monthly', label: 'Month' },
   ];
