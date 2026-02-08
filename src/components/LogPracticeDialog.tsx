@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import type { Path, Pattern } from '@/types/fixation';
-import { ArrowRight, Plus, Search, Trash2, CalendarIcon } from 'lucide-react';
+import { Plus, Search, Trash2, CalendarIcon, Check } from 'lucide-react';
 import { PracticeSetStepper } from '@/components/PracticeSetStepper';
 import { PatternPills } from '@/components/PatternPills';
 import { format, subDays, startOfDay } from 'date-fns';
@@ -20,18 +20,14 @@ interface LogPracticeDialogProps {
   patterns: Pattern[];
   onAddPath: (name: string) => Path;
   onAddPattern: (name: string, pathId: string, practiceSetCount?: number) => Pattern;
-  onLog: (patternId: string, difficulty: 'easy' | 'medium' | 'hard', fixation: 'light' | 'medium' | 'heavy', problemName?: string, date?: string) => void;
+  onLog: (patternId: string, problemName?: string, date?: string) => void;
   onDelete?: (patternId: string) => void;
 }
-
-type Step = 1 | 2 | 3;
 
 export function LogPracticeDialog({
   open, onOpenChange, paths, patterns, onAddPath, onAddPattern, onLog, onDelete
 }: LogPracticeDialogProps) {
-  const [step, setStep] = useState<Step>(1);
   const [selectedPatternId, setSelectedPatternId] = useState<string>('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard' | null>(null);
   const [newPatternName, setNewPatternName] = useState('');
   const [newPathName, setNewPathName] = useState('');
   const [selectedPathId, setSelectedPathId] = useState<string>('');
@@ -43,9 +39,7 @@ export function LogPracticeDialog({
   const [practiceDate, setPracticeDate] = useState<Date>(new Date());
 
   const reset = () => {
-    setStep(1);
     setSelectedPatternId('');
-    setSelectedDifficulty(null);
     setNewPatternName('');
     setNewPathName('');
     setSelectedPathId('');
@@ -62,39 +56,32 @@ export function LogPracticeDialog({
     onOpenChange(o);
   };
 
-  const handleCreateAndSelect = () => {
+  const handleCreatePattern = () => {
     let pathId = selectedPathId;
     if (showNewPath && newPathName.trim()) {
       const p = onAddPath(newPathName.trim());
       pathId = p.id;
+      setSelectedPathId(pathId);
+      setShowNewPath(false);
+      setNewPathName('');
     }
     if (!pathId && paths.length === 0 && !newPathName.trim()) {
       const p = onAddPath('General');
       pathId = p.id;
+      setSelectedPathId(pathId);
     }
-    if (!pathId) return;
-    if (newPatternName.trim()) {
-      const pat = onAddPattern(newPatternName.trim(), pathId, practiceSetCount);
-      setSelectedPatternId(pat.id);
-      setShowNewPattern(false);
-      setStep(2);
-    }
+    if (!pathId || !newPatternName.trim()) return;
+    const pat = onAddPattern(newPatternName.trim(), pathId, practiceSetCount);
+    setSelectedPatternId(pat.id);
+    setShowNewPattern(false);
+    setNewPatternName('');
+    setPracticeSetCount(5);
   };
 
-  const handleSelectExisting = (patternId: string) => {
-    setSelectedPatternId(patternId);
-    setStep(2);
-  };
-
-  const handleDifficulty = (d: 'easy' | 'medium' | 'hard') => {
-    setSelectedDifficulty(d);
-    setStep(3);
-  };
-
-  const handleFixation = (f: 'light' | 'medium' | 'heavy') => {
-    if (!selectedPatternId || !selectedDifficulty) return;
+  const handleSubmit = () => {
+    if (!selectedPatternId) return;
     const dateStr = format(practiceDate, 'yyyy-MM-dd');
-    onLog(selectedPatternId, selectedDifficulty, f, problemName.trim() || undefined, dateStr);
+    onLog(selectedPatternId, problemName.trim() || undefined, dateStr);
     handleClose(false);
   };
 
@@ -112,255 +99,207 @@ export function LogPracticeDialog({
       result = result.filter(p => p.name.toLowerCase().includes(lower));
     }
 
-    // Sort recent patterns first (by successCount descending as proxy for activity)
     return result.sort((a, b) => b.successCount - a.successCount);
   }, [patterns, selectedPathId, searchQuery]);
 
+  const selectedPattern = patterns.find(p => p.id === selectedPatternId);
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md rounded-2xl border-border bg-card">
+      <DialogContent className="sm:max-w-md rounded-2xl border-border bg-card max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl">
-            {step === 1 && 'Log Practice'}
-            {step === 2 && 'How difficult?'}
-            {step === 3 && 'How hard to stabilize?'}
-          </DialogTitle>
+          <DialogTitle className="font-serif text-2xl">Log Practice</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            {step === 1 && 'Select or create a pattern to log.'}
-            {step === 2 && 'Rate the objective difficulty.'}
-            {step === 3 && 'How hard was this to mentally stabilize?'}
+            Select a pattern, name the problem, and log.
           </DialogDescription>
         </DialogHeader>
 
-        <AnimatePresence mode="wait">
-          {step === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-4"
-            >
-              {/* Path filter */}
-              <div>
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">Path</Label>
-                <div className="flex flex-wrap gap-2">
-                  {paths.map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => { setSelectedPathId(p.id); setShowNewPath(false); }}
-                      className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
-                        selectedPathId === p.id
-                          ? 'bg-foreground text-background border-foreground'
-                          : 'bg-secondary text-secondary-foreground border-border hover:border-foreground/30'
-                      }`}
-                    >
-                      {p.name}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setShowNewPath(true)}
-                    className="px-3 py-1.5 rounded-full text-sm border border-dashed border-border text-muted-foreground hover:border-foreground/30 flex items-center gap-1"
-                  >
-                    <Plus className="w-3 h-3" /> New
-                  </button>
-                </div>
-                {showNewPath && (
-                  <Input
-                    value={newPathName}
-                    onChange={e => setNewPathName(e.target.value)}
-                    placeholder="e.g. LeetCode — Trees"
-                    className="mt-2 rounded-xl"
-                  />
-                )}
-              </div>
-
-              {/* Pattern search */}
-              {patterns.length > 0 && (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search patterns…"
-                    className="rounded-xl pl-9"
-                  />
-                </div>
-              )}
-
-              {/* Pattern select */}
-              <div>
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">Pattern</Label>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {filteredPatterns.map(p => {
-                    const path = paths.find(pa => pa.id === p.pathId);
-                    return (
-                      <button
-                        key={p.id}
-                        onClick={() => handleSelectExisting(p.id)}
-                        className="w-full text-left px-4 py-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors group"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <span className="text-sm block">{p.name}</span>
-                            <PatternPills path={path} className="mt-1" />
-                          </div>
-                          {onDelete && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete(p.id);
-                                handleClose(false);
-                              }}
-                              className="p-1.5 rounded-lg text-muted-foreground/0 group-hover:text-muted-foreground hover:!text-destructive transition-colors shrink-0 ml-2"
-                              title="Delete pattern"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                  {filteredPatterns.length === 0 && searchQuery && (
-                    <p className="text-sm text-muted-foreground py-2 text-center">No patterns found</p>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-5"
+        >
+          {/* Date selector */}
+          <div>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal rounded-xl",
+                    isBackdated && "text-foreground border-accent"
                   )}
-                </div>
-                {!showNewPattern ? (
-                  <button
-                    onClick={() => setShowNewPattern(true)}
-                    className="mt-2 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <Plus className="w-3 h-3" /> New pattern
-                  </button>
-                ) : (
-                  <div className="mt-3 space-y-3">
-                    <div className="flex gap-2">
-                      <Input
-                        value={newPatternName}
-                        onChange={e => setNewPatternName(e.target.value)}
-                        placeholder="e.g. Binary Tree — Right Side View"
-                        className="rounded-xl flex-1"
-                      />
-                      <Button
-                        onClick={handleCreateAndSelect}
-                        disabled={!newPatternName.trim() || (!selectedPathId && !newPathName.trim() && paths.length > 0)}
-                        size="sm"
-                        className="rounded-xl bg-foreground text-background hover:bg-foreground/90"
-                      >
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <PracticeSetStepper value={practiceSetCount} onChange={setPracticeSetCount} />
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-
-          {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-3"
-            >
-              {/* Date selector */}
-              <div>
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">
-                  Date
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal rounded-xl",
-                        isBackdated && "text-foreground border-accent"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-                      {format(practiceDate, 'EEEE, MMM d')}
-                      {!isBackdated && (
-                        <span className="ml-1 text-muted-foreground text-xs">(today)</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={practiceDate}
-                      onSelect={(d) => d && setPracticeDate(d)}
-                      disabled={(date) =>
-                        date > today || date < earliestDate
-                      }
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-                {!isBackdated && (
-                  <p className="text-[11px] text-muted-foreground mt-1.5">
-                    Forgot to log earlier? Select a recent date.
-                  </p>
-                )}
-              </div>
-
-              {/* Optional problem name */}
-              <div>
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">
-                  Problem name <span className="normal-case text-muted-foreground/60">(optional)</span>
-                </Label>
-                <Input
-                  value={problemName}
-                  onChange={e => setProblemName(e.target.value)}
-                  placeholder="e.g. LeetCode #199"
-                  className="rounded-xl"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                  {format(practiceDate, 'EEEE, MMM d')}
+                  {!isBackdated && (
+                    <span className="ml-1 text-muted-foreground text-xs">(today)</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={practiceDate}
+                  onSelect={(d) => d && setPracticeDate(d)}
+                  disabled={(date) => date > today || date < earliestDate}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
                 />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Path filter */}
+          <div>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">Path</Label>
+            <div className="flex flex-wrap gap-2">
+              {paths.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => { setSelectedPathId(p.id); setShowNewPath(false); }}
+                  className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
+                    selectedPathId === p.id
+                      ? 'bg-foreground text-background border-foreground'
+                      : 'bg-secondary text-secondary-foreground border-border hover:border-foreground/30'
+                  }`}
+                >
+                  {p.name}
+                </button>
+              ))}
+              <button
+                onClick={() => setShowNewPath(true)}
+                className="px-3 py-1.5 rounded-full text-sm border border-dashed border-border text-muted-foreground hover:border-foreground/30 flex items-center gap-1"
+              >
+                <Plus className="w-3 h-3" /> New
+              </button>
+            </div>
+            {showNewPath && (
+              <Input
+                value={newPathName}
+                onChange={e => setNewPathName(e.target.value)}
+                placeholder="e.g. LeetCode — Trees"
+                className="mt-2 rounded-xl"
+              />
+            )}
+          </div>
+
+          {/* Pattern search */}
+          {patterns.length > 0 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search patterns…"
+                className="rounded-xl pl-9"
+              />
+            </div>
+          )}
+
+          {/* Pattern select */}
+          <div>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">Pattern</Label>
+            <div className="space-y-2 max-h-36 overflow-y-auto">
+              {filteredPatterns.map(p => {
+                const path = paths.find(pa => pa.id === p.pathId);
+                const isSelected = selectedPatternId === p.id;
+                return (
+                  <div
+                    key={p.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedPatternId(p.id)}
+                    onKeyDown={(e) => e.key === 'Enter' && setSelectedPatternId(p.id)}
+                    className={cn(
+                      "w-full text-left px-4 py-3 rounded-xl transition-colors group cursor-pointer",
+                      isSelected
+                        ? "bg-foreground/10 border border-foreground/20"
+                        : "bg-secondary hover:bg-secondary/80 border border-transparent"
+                    )}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          {isSelected && <Check className="w-3.5 h-3.5 text-foreground shrink-0" />}
+                          <span className="text-sm block">{p.name}</span>
+                        </div>
+                        <PatternPills path={path} className="mt-1" />
+                      </div>
+                      {onDelete && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(p.id);
+                            handleClose(false);
+                          }}
+                          className="p-1.5 rounded-lg text-muted-foreground/0 group-hover:text-muted-foreground hover:!text-destructive transition-colors shrink-0 ml-2"
+                          title="Delete pattern"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {filteredPatterns.length === 0 && searchQuery && (
+                <p className="text-sm text-muted-foreground py-2 text-center">No patterns found</p>
+              )}
+            </div>
+            {!showNewPattern ? (
+              <button
+                onClick={() => setShowNewPattern(true)}
+                className="mt-2 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Plus className="w-3 h-3" /> New pattern
+              </button>
+            ) : (
+              <div className="mt-3 space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    value={newPatternName}
+                    onChange={e => setNewPatternName(e.target.value)}
+                    placeholder="e.g. Binary Tree — Right Side View"
+                    className="rounded-xl flex-1"
+                  />
+                  <Button
+                    onClick={handleCreatePattern}
+                    disabled={!newPatternName.trim() || (!selectedPathId && !newPathName.trim() && paths.length > 0)}
+                    size="sm"
+                    className="rounded-xl bg-foreground text-background hover:bg-foreground/90"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+                <PracticeSetStepper value={practiceSetCount} onChange={setPracticeSetCount} />
               </div>
+            )}
+          </div>
 
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground block">Difficulty</Label>
-              {(['easy', 'medium', 'hard'] as const).map(d => (
-                <button
-                  key={d}
-                  onClick={() => handleDifficulty(d)}
-                  className="w-full px-5 py-4 rounded-xl bg-secondary hover:bg-secondary/70 transition-all text-left capitalize text-lg font-serif"
-                >
-                  {d}
-                </button>
-              ))}
-            </motion.div>
-          )}
+          {/* Problem name */}
+          <div>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">
+              Problem name <span className="normal-case text-muted-foreground/60">(optional)</span>
+            </Label>
+            <Input
+              value={problemName}
+              onChange={e => setProblemName(e.target.value)}
+              placeholder="e.g. LeetCode #199"
+              className="rounded-xl"
+            />
+          </div>
 
-          {step === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-2"
-            >
-              <p className="text-sm text-muted-foreground mb-4">
-                How hard was this to mentally stabilize?
-              </p>
-              {([
-                { level: 'light' as const, emoji: '🟢', label: 'Light' },
-                { level: 'medium' as const, emoji: '🟡', label: 'Medium' },
-                { level: 'heavy' as const, emoji: '🔴', label: 'Heavy' },
-              ]).map(({ level, emoji, label }) => (
-                <button
-                  key={level}
-                  onClick={() => handleFixation(level)}
-                  className="w-full px-5 py-4 rounded-xl bg-secondary hover:bg-secondary/70 transition-all text-left flex items-center gap-3"
-                >
-                  <span className="text-xl">{emoji}</span>
-                  <span className="text-lg font-serif">{label}</span>
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+          {/* Submit */}
+          <Button
+            onClick={handleSubmit}
+            disabled={!selectedPatternId}
+            className="w-full rounded-xl bg-foreground text-background hover:bg-foreground/90 h-12 text-base font-serif"
+          >
+            Log Practice
+          </Button>
+        </motion.div>
       </DialogContent>
     </Dialog>
   );
