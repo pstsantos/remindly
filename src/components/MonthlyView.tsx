@@ -23,9 +23,10 @@ export function MonthlyView({ scheduled, events, onDayClick }: MonthlyViewProps)
       const dateStr = format(date, 'yyyy-MM-dd');
       const scheduledCount = scheduled.filter(s => s.date === dateStr).length;
       const eventCount = events.filter(e => e.date === dateStr).length;
-      const heavyEvents = events.filter(e => e.date === dateStr && e.fixationLevel === 'heavy').length;
-      const intensity = heavyEvents > 0 ? 3 : eventCount > 0 ? 2 : scheduledCount > 0 ? 1 : 0;
-      return { date, dateStr, intensity, isToday: dateStr === todayStr };
+      const hasCompleted = eventCount > 0;
+      const totalItems = scheduledCount + eventCount;
+      const intensity = totalItems >= 3 ? 3 : totalItems >= 2 ? 2 : totalItems >= 1 ? 1 : 0;
+      return { date, dateStr, intensity, hasCompleted, isToday: dateStr === todayStr };
     });
 
     const firstDayOfWeek = getDay(start);
@@ -81,11 +82,18 @@ export function MonthlyView({ scheduled, events, onDayClick }: MonthlyViewProps)
             animate={{ opacity: 1 }}
             transition={{ delay: i * 0.01 }}
             onClick={() => onDayClick(day.dateStr)}
-            className={`aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-colors cursor-pointer hover:ring-1 hover:ring-foreground/20 glass ${
+            className={`aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-medium transition-colors cursor-pointer hover:ring-1 hover:ring-foreground/20 glass ${
               day.isToday ? 'ring-2 ring-primary' : ''
-            } ${day.intensity === 3 ? 'fixation-heavy text-primary-foreground' : day.intensity === 2 ? 'fixation-medium' : ''}`}
+            }`}
           >
-            {format(day.date, 'd')}
+            <span>{format(day.date, 'd')}</span>
+            {day.intensity > 0 && (
+              <span className="flex gap-0.5 mt-0.5">
+                {day.intensity >= 1 && <span className={`w-1.5 h-1.5 rounded-full ${day.hasCompleted ? 'bg-primary' : 'bg-foreground/30'}`} />}
+                {day.intensity >= 2 && <span className={`w-1.5 h-1.5 rounded-full ${day.hasCompleted ? 'bg-primary' : 'bg-foreground/30'}`} />}
+                {day.intensity >= 3 && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+              </span>
+            )}
           </motion.button>
         ))}
       </div>
