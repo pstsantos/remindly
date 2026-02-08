@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,8 +28,8 @@ export function LogPracticeDialog({
   const [newPatternName, setNewPatternName] = useState('');
   const [newPathName, setNewPathName] = useState('');
   const [selectedPathId, setSelectedPathId] = useState<string>('');
-  const [showNewPath, setShowNewPath] = useState(false);
-  const [showNewPattern, setShowNewPattern] = useState(false);
+  const [showNewPath, setShowNewPath] = useState(paths.length === 0);
+  const [showNewPattern, setShowNewPattern] = useState(patterns.length === 0);
 
   const reset = () => {
     setStep(1);
@@ -38,8 +38,8 @@ export function LogPracticeDialog({
     setNewPatternName('');
     setNewPathName('');
     setSelectedPathId('');
-    setShowNewPath(false);
-    setShowNewPattern(false);
+    setShowNewPath(paths.length === 0);
+    setShowNewPattern(patterns.length === 0);
   };
 
   const handleClose = (o: boolean) => {
@@ -91,6 +91,11 @@ export function LogPracticeDialog({
             {step === 2 && 'How difficult?'}
             {step === 3 && 'How hard to stabilize?'}
           </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            {step === 1 && 'Select or create a pattern to log.'}
+            {step === 2 && 'Rate the objective difficulty.'}
+            {step === 3 && 'How hard was this to mentally stabilize?'}
+          </DialogDescription>
         </DialogHeader>
 
         <AnimatePresence mode="wait">
