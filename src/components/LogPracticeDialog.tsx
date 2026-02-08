@@ -4,10 +4,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import type { Path, Pattern } from '@/types/fixation';
-import { ArrowRight, Plus, Search, Trash2 } from 'lucide-react';
+import { ArrowRight, Plus, Search, Trash2, CalendarIcon } from 'lucide-react';
 import { PracticeSetStepper } from '@/components/PracticeSetStepper';
 import { PatternPills } from '@/components/PatternPills';
+import { format, subDays, startOfDay } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface LogPracticeDialogProps {
   open: boolean;
@@ -16,7 +20,7 @@ interface LogPracticeDialogProps {
   patterns: Pattern[];
   onAddPath: (name: string) => Path;
   onAddPattern: (name: string, pathId: string, practiceSetCount?: number) => Pattern;
-  onLog: (patternId: string, difficulty: 'easy' | 'medium' | 'hard', fixation: 'light' | 'medium' | 'heavy', problemName?: string) => void;
+  onLog: (patternId: string, difficulty: 'easy' | 'medium' | 'hard', fixation: 'light' | 'medium' | 'heavy', problemName?: string, date?: string) => void;
   onDelete?: (patternId: string) => void;
 }
 
@@ -36,6 +40,7 @@ export function LogPracticeDialog({
   const [searchQuery, setSearchQuery] = useState('');
   const [practiceSetCount, setPracticeSetCount] = useState(5);
   const [problemName, setProblemName] = useState('');
+  const [practiceDate, setPracticeDate] = useState<Date>(new Date());
 
   const reset = () => {
     setStep(1);
@@ -49,6 +54,7 @@ export function LogPracticeDialog({
     setSearchQuery('');
     setPracticeSetCount(5);
     setProblemName('');
+    setPracticeDate(new Date());
   };
 
   const handleClose = (o: boolean) => {
@@ -87,9 +93,14 @@ export function LogPracticeDialog({
 
   const handleFixation = (f: 'light' | 'medium' | 'heavy') => {
     if (!selectedPatternId || !selectedDifficulty) return;
-    onLog(selectedPatternId, selectedDifficulty, f, problemName.trim() || undefined);
+    const dateStr = format(practiceDate, 'yyyy-MM-dd');
+    onLog(selectedPatternId, selectedDifficulty, f, problemName.trim() || undefined, dateStr);
     handleClose(false);
   };
+
+  const today = startOfDay(new Date());
+  const earliestDate = subDays(today, 14);
+  const isBackdated = format(practiceDate, 'yyyy-MM-dd') !== format(today, 'yyyy-MM-dd');
 
   const filteredPatterns = useMemo(() => {
     let result = selectedPathId
@@ -255,6 +266,47 @@ export function LogPracticeDialog({
               exit={{ opacity: 0, x: -20 }}
               className="space-y-3"
             >
+              {/* Date selector */}
+              <div>
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">
+                  Date
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal rounded-xl",
+                        isBackdated && "text-foreground border-accent"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                      {format(practiceDate, 'EEEE, MMM d')}
+                      {!isBackdated && (
+                        <span className="ml-1 text-muted-foreground text-xs">(today)</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={practiceDate}
+                      onSelect={(d) => d && setPracticeDate(d)}
+                      disabled={(date) =>
+                        date > today || date < earliestDate
+                      }
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {!isBackdated && (
+                  <p className="text-[11px] text-muted-foreground mt-1.5">
+                    Forgot to log earlier? Select a recent date.
+                  </p>
+                )}
+              </div>
+
               {/* Optional problem name */}
               <div>
                 <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2 block">
