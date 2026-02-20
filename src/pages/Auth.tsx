@@ -1,17 +1,41 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [processingCallback, setProcessingCallback] = useState(false);
 
-  if (loading) {
+  // Handle magic link callback tokens in URL
+  useEffect(() => {
+    const hash = window.location.hash;
+    const params = new URLSearchParams(window.location.search);
+    const hasTokenInHash = hash && (hash.includes('access_token') || hash.includes('type=magiclink') || hash.includes('type=recovery'));
+    const hasTokenInParams = params.has('token') || params.has('code');
+
+    if (hasTokenInHash || hasTokenInParams) {
+      setProcessingCallback(true);
+      // Supabase client will automatically pick up the tokens
+      // Just wait for onAuthStateChange to fire
+    }
+  }, []);
+
+  // Redirect once user is authenticated
+  useEffect(() => {
+    if (user && !loading) {
+      navigate('/', { replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  if (loading || processingCallback) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-6 h-6 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
@@ -26,7 +50,7 @@ const Auth = () => {
     if (!email.trim()) return;
     setSubmitting(true);
 
-    const { error } = await (await import('@/integrations/supabase/client')).supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: window.location.origin },
     });
