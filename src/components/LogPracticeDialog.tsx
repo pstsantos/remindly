@@ -18,8 +18,8 @@ interface LogPracticeDialogProps {
   onOpenChange: (open: boolean) => void;
   paths: Path[];
   patterns: Pattern[];
-  onAddPath: (name: string) => Path;
-  onAddPattern: (name: string, pathId: string, practiceSetCount?: number) => Pattern;
+  onAddPath: (name: string) => Path | Promise<Path>;
+  onAddPattern: (name: string, pathId: string, practiceSetCount?: number) => Pattern | Promise<Pattern>;
   onLog: (patternId: string, problemName?: string, date?: string, practiceSetCount?: number) => void;
   onDelete?: (patternId: string) => void;
 }
@@ -56,22 +56,22 @@ export function LogPracticeDialog({
     onOpenChange(o);
   };
 
-  const handleCreatePattern = () => {
+  const handleCreatePattern = async () => {
     let pathId = selectedPathId;
     if (showNewPath && newPathName.trim()) {
-      const p = onAddPath(newPathName.trim());
+      const p = await onAddPath(newPathName.trim());
       pathId = p.id;
       setSelectedPathId(pathId);
       setShowNewPath(false);
       setNewPathName('');
     }
     if (!pathId && paths.length === 0 && !newPathName.trim()) {
-      const p = onAddPath('General');
+      const p = await onAddPath('General');
       pathId = p.id;
       setSelectedPathId(pathId);
     }
     if (!pathId || !newPatternName.trim()) return;
-    const pat = onAddPattern(newPatternName.trim(), pathId, practiceSetCount);
+    const pat = await onAddPattern(newPatternName.trim(), pathId, practiceSetCount);
     setSelectedPatternId(pat.id);
     setShowNewPattern(false);
     setNewPatternName('');

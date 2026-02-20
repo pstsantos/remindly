@@ -14,7 +14,188 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      paths: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          intention: string | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          intention?: string | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          intention?: string | null
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      patterns: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          path_id: string
+          practice_set_count: number
+          success_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          path_id: string
+          practice_set_count?: number
+          success_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          path_id?: string
+          practice_set_count?: number
+          success_count?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patterns_path_id_fkey"
+            columns: ["path_id"]
+            isOneToOne: false
+            referencedRelation: "paths"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      practice_events: {
+        Row: {
+          date: string
+          difficulty: string
+          fixation_level: string
+          id: string
+          pattern_id: string
+          problem_name: string | null
+          user_id: string
+        }
+        Insert: {
+          date?: string
+          difficulty: string
+          fixation_level: string
+          id?: string
+          pattern_id: string
+          problem_name?: string | null
+          user_id: string
+        }
+        Update: {
+          date?: string
+          difficulty?: string
+          fixation_level?: string
+          id?: string
+          pattern_id?: string
+          problem_name?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_events_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      problems: {
+        Row: {
+          date: string
+          id: string
+          name: string
+          pattern_id: string
+          user_id: string
+        }
+        Insert: {
+          date?: string
+          id?: string
+          name: string
+          pattern_id: string
+          user_id: string
+        }
+        Update: {
+          date?: string
+          id?: string
+          name?: string
+          pattern_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "problems_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheduled_occurrences: {
+        Row: {
+          auto_generated: boolean
+          date: string
+          id: string
+          pattern_id: string
+          user_id: string
+        }
+        Insert: {
+          auto_generated?: boolean
+          date: string
+          id?: string
+          pattern_id: string
+          user_id: string
+        }
+        Update: {
+          auto_generated?: boolean
+          date?: string
+          id?: string
+          pattern_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_occurrences_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_preferences: {
+        Row: {
+          pace: string
+          user_id: string
+        }
+        Insert: {
+          pace?: string
+          user_id: string
+        }
+        Update: {
+          pace?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
