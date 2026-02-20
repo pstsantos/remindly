@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, BarChart3, RotateCcw } from 'lucide-react';
+import { Plus, BarChart3, RotateCcw, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 import type { ViewMode } from '@/types/fixation';
 import { useFixationStore } from '@/hooks/useFixationStore';
@@ -22,6 +23,7 @@ const Index = () => {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const store = useFixationStore();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
 
   const todayItems = store.getTodayScheduled();
@@ -41,8 +43,8 @@ const Index = () => {
     });
   };
 
-  const handleLog = (patternId: string, problemName?: string, date?: string, practiceSetCount?: number) => {
-    const result = store.logPractice(patternId, 'medium', 'medium', problemName, date, practiceSetCount);
+  const handleLog = async (patternId: string, problemName?: string, date?: string, practiceSetCount?: number) => {
+    const result = await store.logPractice(patternId, 'medium', 'medium', problemName, date, practiceSetCount);
     toast('Practice logged ✓', {
       description: `Next revisit booked: ${format(new Date(result.occurrence.date + 'T00:00:00'), 'MMM d')}`,
     });
@@ -109,6 +111,14 @@ const Index = () => {
           >
             <BarChart3 className="w-4.5 h-4.5 text-muted-foreground" />
           </button>
+          <button
+            onClick={() => signOut()}
+            className="p-2 rounded-full hover:bg-secondary transition-colors"
+            aria-label="Sign out"
+            title="Sign out"
+          >
+            <LogOut className="w-4 h-4 text-muted-foreground" />
+          </button>
         </div>
       </div>
 
@@ -154,8 +164,8 @@ const Index = () => {
         onOpenChange={setLogOpen}
         paths={store.paths}
         patterns={store.patterns}
-        onAddPath={(name) => store.addPath(name)}
-        onAddPattern={(name, pathId, count) => store.addPattern(name, pathId, count)}
+        onAddPath={async (name) => await store.addPath(name)}
+        onAddPattern={async (name, pathId, count) => await store.addPattern(name, pathId, count)}
         onLog={handleLog}
         onDelete={handleDeleteRequest}
       />
