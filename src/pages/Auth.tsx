@@ -6,11 +6,10 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 const Auth = () => {
-  const { user, loading, signUp, signIn } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const { user, loading } = useAuth();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [sent, setSent] = useState(false);
 
   if (loading) {
     return (
@@ -24,20 +23,19 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) return;
     setSubmitting(true);
 
-    if (isSignUp) {
-      const { error } = await signUp(email, password);
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success('Check your email to confirm your account.');
-      }
+    const { error } = await (await import('@/integrations/supabase/client')).supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin },
+    });
+
+    if (error) {
+      toast.error(error.message);
     } else {
-      const { error } = await signIn(email, password);
-      if (error) {
-        toast.error(error.message);
-      }
+      setSent(true);
+      toast.success('Magic link sent! Check your inbox.');
     }
 
     setSubmitting(false);
@@ -53,51 +51,46 @@ const Auth = () => {
         <div className="glass-strong rounded-2xl p-8 space-y-6">
           <div className="text-center space-y-2">
             <h1 className="text-3xl text-foreground">
-              {isSignUp ? 'Create account' : 'Welcome back'}
+              {sent ? 'Check your email' : 'Welcome'}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {isSignUp
-                ? 'Start tracking your revisit patterns.'
-                : 'Your patterns are waiting.'}
+              {sent
+                ? `We sent a sign-in link to ${email}`
+                : 'Enter your email to get a magic sign-in link.'}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="glass border-foreground/10"
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="glass border-foreground/10"
-            />
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-3 rounded-xl glass-strong text-foreground font-medium hover:bg-white/50 transition-colors disabled:opacity-50"
-            >
-              {submitting ? '...' : isSignUp ? 'Sign up' : 'Sign in'}
-            </button>
-          </form>
-
-          <p className="text-center text-sm text-muted-foreground">
-            {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-foreground underline underline-offset-2"
-            >
-              {isSignUp ? 'Sign in' : 'Sign up'}
-            </button>
-          </p>
+          {!sent ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="glass border-foreground/10"
+              />
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3 rounded-xl glass-strong text-foreground font-medium hover:bg-white/50 transition-colors disabled:opacity-50"
+              >
+                {submitting ? '...' : 'Send magic link'}
+              </button>
+            </form>
+          ) : (
+            <div className="space-y-4 text-center">
+              <p className="text-xs text-muted-foreground">
+                Didn't get it? Check spam or try again.
+              </p>
+              <button
+                onClick={() => setSent(false)}
+                className="text-sm text-foreground underline underline-offset-2"
+              >
+                Use a different email
+              </button>
+            </div>
+          )}
         </div>
       </motion.div>
     </div>
