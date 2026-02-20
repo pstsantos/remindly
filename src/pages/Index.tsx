@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, BarChart3, RotateCcw, LogOut } from 'lucide-react';
+import { Plus, BarChart3, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { ProfileDrawer } from '@/components/ProfileDrawer';
 
 import type { ViewMode } from '@/types/fixation';
 import { useFixationStore } from '@/hooks/useFixationStore';
@@ -23,8 +26,12 @@ const Index = () => {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const store = useFixationStore();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const displayName = profile.nickname || user?.email?.split('@')[0] || 'You';
 
   const todayItems = store.getTodayScheduled();
   const todayItem = todayItems[0];
@@ -89,9 +96,17 @@ const Index = () => {
     <div className="min-h-screen max-w-2xl mx-auto relative pb-24 px-4 md:px-0 md:py-8 md:my-4 md:rounded-2xl md:border md:border-foreground/10 md:shadow-soft md:bg-white/10 md:backdrop-blur-sm">
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 pt-6">
-        <div className="px-4 py-1.5 rounded-full text-sm text-foreground/70 glass">
-          {format(new Date(), 'EEEE, d MMMM')}
-        </div>
+        <button onClick={() => setProfileOpen(true)} className="flex items-center gap-2 group">
+          <Avatar className="w-8 h-8 border border-foreground/10">
+            {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="You" /> : null}
+            <AvatarFallback className="text-xs bg-secondary text-foreground">
+              {displayName[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-sm text-foreground/70 group-hover:text-foreground transition-colors hidden sm:inline">
+            {displayName}
+          </span>
+        </button>
         <div className="flex items-center gap-1">
           <button
             onClick={() => {
@@ -110,14 +125,6 @@ const Index = () => {
             aria-label="Progress"
           >
             <BarChart3 className="w-4.5 h-4.5 text-muted-foreground" />
-          </button>
-          <button
-            onClick={() => signOut()}
-            className="p-2 rounded-full hover:bg-secondary transition-colors"
-            aria-label="Sign out"
-            title="Sign out"
-          >
-            <LogOut className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
       </div>
@@ -193,6 +200,8 @@ const Index = () => {
         }}
         onDelete={handleDeleteRequest}
       />
+      {/* Profile drawer */}
+      <ProfileDrawer open={profileOpen} onOpenChange={setProfileOpen} />
     </div>
   );
 };
