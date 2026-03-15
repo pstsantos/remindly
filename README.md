@@ -1,4 +1,4 @@
-# 🏮 Remindly 🏮 *
+# 🏮 Remindly 🏮 
 > *Practice smarter. Remember longer. Race against yourself.*
 
 A spaced-repetition practice scheduler built for developers grinding DSA and anyone serious about turning hard things into second nature. You define your syllabus — Flowtica figures out when to bring it back.
