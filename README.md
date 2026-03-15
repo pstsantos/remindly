@@ -1,73 +1,103 @@
-# Welcome to your Lovable project
+# 🏮 Remindly 🏮 *
+> *Practice smarter. Remember longer. Race against yourself.*
 
-## Project info
+A spaced-repetition practice scheduler built for developers grinding DSA and anyone serious about turning hard things into second nature. You define your syllabus — Flowtica figures out when to bring it back.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+---
 
-## How can I edit this code?
+## ✨ Why this exists
 
-There are several ways of editing your application.
+Most people don't fail because they stopped caring. They fail because they forgot to come back.
 
-**Use Lovable**
+Flowtica solves the "I learned it once and then it vanished" problem by scheduling your practice around how memory actually works — showing you the right pattern at the right time, every time.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Features
 
-**Use your preferred IDE**
+- **Spaced-repetition engine** — patterns resurface on an intelligent schedule based on your practice history
+- **Custom syllabus** — define your own paths and problems, not someone else's curriculum
+- **Weekly & monthly calendar views** — see your practice load at a glance
+- **Personal profile & leaderboard** — track your streak, sessions, and mastered patterns. You're running a race against yourself
+- **Cross-device sync** — log in from your phone or laptop and pick up exactly where you left off
+- **Magic link auth** — no passwords. Just your email and a click
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🛠️ Tech Stack
 
-Follow these steps:
+| Layer | Tech |
+|---|---|
+| Frontend | React + Vite |
+| Styling | Tailwind CSS |
+| Auth | Supabase Magic Link |
+| Database | Supabase (Postgres + RLS) |
+| Hosting | Lovable Cloud |
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 🗄️ Database Schema
 
-# Step 3: Install the necessary dependencies.
-npm i
+| Table | Purpose |
+|---|---|
+| `paths` | Learning tracks / syllabi |
+| `patterns` | Individual concepts or problems |
+| `problems` | Specific practice items |
+| `practice_events` | Log of every session |
+| `scheduled_occurrences` | When each item is due next |
+| `user_preferences` | Profile, nickname, avatar |
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+All tables are secured with **Row Level Security** — your data is yours alone.
+
+---
+
+## 🏁 Getting Started
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
+
+# 2. Install dependencies
+npm install
+
+# 3. Set up environment variables
+cp .env.example .env
+# Add your Supabase URL and anon key
+
+# 4. Run locally
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 📍 Roadmap
 
-## What technologies are used for this project?
+- [ ] Streak protection / grace days
+- [ ] Notification reminders (email or push)
+- [ ] Public profile sharing
+- [ ] Mobile app (PWA)
+- [ ] Community-shared syllabi / pattern packs
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🤝 Contributing
 
-## How can I deploy this project?
+This project is an MVP and actively growing. Bug reports, feature ideas, and PRs are all welcome — open an issue and let's talk.
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+## 📄 License
 
-Yes, you can!
+MIT — use it, fork it, build on it.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+*Built with curiosity and vibe coding. One pattern at a time.*
